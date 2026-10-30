@@ -1,0 +1,25 @@
+name: Sign Apple Shortcut
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sign-shortcut:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sign Shortcut File
+        run: |
+          # Usage: shortcuts sign -i <input-file> -o <output-file>
+          shortcuts sign -i "MyShortcut.shortcut" -o "MyShortcut_signed.shortcut"
+
+      - name: Upload Signed Shortcut Artifact
+        uses: actions/artifacts@v4
+        with:
+          name: signed-shortcut
+          path: MyShortcut_signed.shortcut
