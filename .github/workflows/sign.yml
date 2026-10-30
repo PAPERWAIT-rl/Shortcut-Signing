@@ -13,15 +13,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Sign Shortcut File
+      - name: Convert Plist to Binary Shortcut & Sign
         run: |
-          # Get the current logged-in console user UID to run the command in context
           CONSOLE_USER=$(stat -f "%Su" /dev/console)
           CONSOLE_UID=$(id -u "$CONSOLE_USER")
           
+          echo "Converting plist to binary shortcut format..."
+          # Convert standard text plist to binary plist format (.shortcut files are binary plists under the hood)
+          plutil -convert binary1 MyShortcut.plist -o MyShortcut.shortcut
+
           echo "Running shortcuts sign as user: $CONSOLE_USER ($CONSOLE_UID)"
-          
-          # Use launchctl to run the command within a proper Aqua context
           sudo launchctl asuser "$CONSOLE_UID" sudo -u "$CONSOLE_USER" \
             shortcuts sign --mode anyone --input "MyShortcut.shortcut" --output "MyShortcut_signed.shortcut"
 
