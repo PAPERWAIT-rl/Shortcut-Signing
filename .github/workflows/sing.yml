@@ -13,13 +13,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # (Optional) If you generate your .shortcut file dynamically via a script, 
-      # ensure it is created here before signing.
-
       - name: Sign Shortcut File
         run: |
-          # Usage: shortcuts sign -i <input-file> -o <output-file>
-          shortcuts sign -i "MyShortcut.shortcut" -o "MyShortcut_signed.shortcut"
+          # Get the current logged-in console user UID to run the command in context
+          CONSOLE_USER=$(stat -f "%Su" /dev/console)
+          CONSOLE_UID=$(id -u "$CONSOLE_USER")
+          
+          echo "Running shortcuts sign as user: $CONSOLE_USER ($CONSOLE_UID)"
+          
+          # Use launchctl to run the command within a proper Aqua context
+          sudo launchctl asuser "$CONSOLE_UID" sudo -u "$CONSOLE_USER" \
+            shortcuts sign --mode anyone --input "MyShortcut.shortcut" --output "MyShortcut_signed.shortcut"
 
       - name: Upload Signed Shortcut Artifact
         uses: actions/upload-artifact@v4
